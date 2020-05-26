@@ -19,14 +19,13 @@ cbr_url = 'https://www.cbr.ru/scripts/XML_daily.asp?date_req=' + str(datetime.to
 
 # add filemode="w" to overwrite
 logging.basicConfig(filename='ZeroCoolBot.log', filemode='w', format='%(asctime)s - %(message)s', datefmt='%d %b %y '
-                                                                                                          '%H:%M:%S',
-                    level=logging.INFO)
+                    '%H:%M:%S', level=logging.INFO)
 
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
     # keyboard
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     btn1 = types.KeyboardButton('Курс $')
     btn2 = types.KeyboardButton('Курсы валют')
     btn3 = types.KeyboardButton('Курс ₿')
@@ -35,10 +34,8 @@ def start_message(message):
     try:
         # bot.send_message(message.chat.id, '/rate или /курс - курс валюты \n/rates или /курсы - курс всех валют
         # \n/crypto или /крипта - курс крипты \nИли введите название города и узнаете погоду')
-        bot.send_message(message.chat.id, 'Добро пожаловать, {0.first_name}!\nЯ - <b>{1.first_name}</b>, '
-                                          'бот созданный чтобы быть подопытным кроликом.'.format(message.from_user,
-                                                                                                 bot.get_me()),
-                         parse_mode='html', reply_markup=markup)
+        send_msg = 'Привет, {0.first_name}!\nЯ - <b>{1.first_name}</b>, бот созданный чтобы быть подопытным кроликом.'.format(message.from_user, bot.get_me())
+        bot.send_message(message.chat.id, send_msg, parse_mode='html', reply_markup=markup)
     except Exception as e:
         logging.error("Exception occurred in start_message_start", exc_info=e)
 
