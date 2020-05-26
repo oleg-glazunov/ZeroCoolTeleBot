@@ -14,7 +14,7 @@ from config import bot_token, owm_api_key, binance_api_key, binance_api_secret
 bot = telebot.TeleBot(bot_token)
 owm = pyowm.OWM(owm_api_key, language='ru')
 headers = {'accept': '*/*', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, '
-                                          'like Gecko) Chrome/77.0.3865.75 Safari/537.36'}
+                                          'like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
 cbr_url = 'https://www.cbr.ru/scripts/XML_daily.asp?date_req=' + str(datetime.today().strftime('%d/%m/%Y'))
 
 # add filemode="w" to overwrite
@@ -34,7 +34,8 @@ def start_message(message):
     try:
         # bot.send_message(message.chat.id, '/rate или /курс - курс валюты \n/rates или /курсы - курс всех валют
         # \n/crypto или /крипта - курс крипты \nИли введите название города и узнаете погоду')
-        send_msg = 'Привет, {0.first_name}!\nЯ - <b>{1.first_name}</b>, бот созданный чтобы быть подопытным кроликом.'.format(message.from_user, bot.get_me())
+        send_msg = 'Привет, {0.first_name}!\nЯ - <b>{1.first_name}</b>, бот созданный чтобы быть подопытным кроликом.'\
+            .format(message.from_user, bot.get_me())
         bot.send_message(message.chat.id, send_msg, parse_mode='html', reply_markup=markup)
     except Exception as e:
         logging.error("Exception occurred in start_message_start", exc_info=e)
