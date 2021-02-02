@@ -1,25 +1,32 @@
 # coding=utf-8
 import telebot
-from telebot import types
-import pyowm
 import requests
 import json
 import logging
+from telebot import types
+from pyowm.owm import OWM
+from pyowm.utils.config import get_default_config
 from datetime import datetime
 from bs4 import BeautifulSoup as bs
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
 from config import bot_token, owm_api_key, binance_api_key, binance_api_secret
 
-bot = telebot.TeleBot(bot_token)
-owm = pyowm.OWM(owm_api_key, language='ru')
-headers = {'accept': '*/*', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, '
-                                          'like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
+bot = telebot.TeleBot(bot_token, parse_mode=None)
+
+config_dict = get_default_config()
+config_dict['language'] = 'ru'
+owm = OWM(owm_api_key, config_dict)
+mgr = owm.weather_manager()
+
 cbr_url = 'https://www.cbr.ru/scripts/XML_daily.asp?date_req=' + str(datetime.today().strftime('%d/%m/%Y'))
 
+headers = {'accept': '*/*', 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                                          '(KHTML, like Gecko) Chrome/88.0.4324.104 Safari/537.36'}
+
 # add filemode="w" to overwrite
-logging.basicConfig(filename='ZeroCoolBot.log', filemode='w', format='%(asctime)s - %(message)s', datefmt='%d %b %y '
-                    '%H:%M:%S', level=logging.INFO)
+logging.basicConfig(filename='ZeroCoolBot.log', filemode='w', format='%(asctime)s - %(message)s',
+                    datefmt='%d %b %y %H:%M:%S', level=logging.INFO)
 
 
 @bot.message_handler(commands=['start'])
@@ -32,12 +39,10 @@ def start_message(message):
     markup.add(btn1, btn2, btn3)
 
     try:
-        # bot.send_message(message.chat.id, '/rate или /курс - курс валюты \n/rates или /курсы - курс всех валют
-        # \n/crypto или /крипта - курс крипты \nИли введите название города и узнаете погоду')
         send_msg = 'Привет, {0.first_name}!\n' \
-                   'Я - <b>{1.first_name}</b>, помогаю узнать погоду и курсы.\n' \
+                   'Я - <b>{1.first_name}</b>, помогаю узнать погоду и курсы валют.\n' \
                    'Чтобы узнать погоду, введи название города.\n' \
-                   'Чтобы узнать курс, нажми соответствующую кнопку.'\
+                   'Чтобы узнать курс, нажми соответствующую кнопку.' \
             .format(message.from_user, bot.get_me())
         bot.send_message(message.chat.id, send_msg, parse_mode='html', reply_markup=markup)
     except Exception as e:
@@ -60,12 +65,11 @@ def send_echo(message):
         bot.send_message(message.chat.id, binance())
     else:  # погода в городах
         try:
-            observation = owm.weather_at_place(message.text)
-            w = observation.get_weather()
-            temp = w.get_temperature('celsius')['temp']
-            wind = w.get_wind()['speed']
-            humidity = w.get_humidity()
-            answer = 'В городе ' + message.text + ' сейчас ' + w.get_detailed_status() + ', температра ' + str(
+            weather = mgr.weather_at_place(message.text).weather
+            temp = weather.temperature('celsius')['temp']
+            wind = weather.wind()['speed']
+            humidity = weather.humidity
+            answer = 'В городе ' + message.text + ' сейчас ' + weather.detailed_status + ', температра ' + str(
                 temp) + '°, скорость ветра ' + str(wind) + 'м/с, влажность ' + str(humidity) + '%. '
             if temp < 10:
                 answer += 'Сейчас холодно, одевайтесь тепло.'
@@ -73,9 +77,9 @@ def send_echo(message):
                 answer += 'Сейчас прохладно, одевайтесь теплее.'
             else:
                 answer += 'Температура ok, одевайтесь легко.'
-            if w.get_detailed_status() == 'небольшой дождь' \
-                    or w.get_detailed_status() == 'дождь' \
-                    or w.get_detailed_status() == 'гроза':
+            if weather.detailed_status == 'небольшой дождь' \
+                    or weather.detailed_status == 'дождь' \
+                    or weather.detailed_status == 'гроза':
                 answer += ' Не забудьте взять зонт.'
             bot.send_message(message.chat.id, answer)
             print(str(datetime.today().strftime('%d.%m.%Y %H:%M:%S')) + ' Запрос погоды для города ' + message.text)
@@ -164,16 +168,17 @@ def binance():
         eth_cp = json.loads(json.dumps(client.get_ticker(symbol='ETHUSDT')))
         xrp = client.get_margin_price_index(symbol='XRPUSDT')
         xrp_cp = json.loads(json.dumps(client.get_ticker(symbol='XRPUSDT')))
-        # bch = client.get_margin_price_index(symbol='BCHABCUSDT')
-        # bch_cp = json.loads(json.dumps(client.get_ticker(symbol='BCHABCUSDT')))
-        # ltc = client.get_margin_price_index(symbol='LTCUSDT')
-        # ltc_cp = json.loads(json.dumps(client.get_ticker(symbol='LTCUSDT')))
-        coin = 'Топ-3 криптовалют на ' + str(datetime.today().strftime('%d.%m.%Y %H:%M:%S')) + '\n\n' + \
-               'BTC - ' + str(round(float(btc['price']), 2)) + ' $ (' + str(round(float(btc_cp["priceChangePercent"]), 2)) + '%)' + '\n' + \
-               'ETH - ' + str(round(float(eth['price']), 2)) + ' $ (' + str(round(float(eth_cp["priceChangePercent"]), 2)) + '%)' + '\n' + \
-               'XRP - ' + str(round(float(xrp['price']), 3)) + ' $ (' + str(round(float(xrp_cp["priceChangePercent"]), 2)) + '%)'
-               # + '\n' + 'BCH - ' + str(round(float(bch['price']), 2)) + ' $ (' + str(round(float(bch_cp["priceChangePercent"]), 2)) + '%)'
-               # + '\n' + 'LTC - ' + str(round(float(ltc['price']), 2)) + ' $ (' + str(round(float(ltc_cp["priceChangePercent"]), 2)) + '%)'
+        bnb = client.get_margin_price_index(symbol='BNBUSDT')
+        bnb_cp = json.loads(json.dumps(client.get_ticker(symbol='BNBUSDT')))
+        coin = 'Курс криптовалют на ' + str(datetime.today().strftime('%d.%m.%Y %H:%M:%S')) + '\n\n' + \
+               'BTC - ' + str(round(float(btc['price']), 2)) + ' $ (' + str(
+            round(float(btc_cp["priceChangePercent"]), 2)) + '%)' + '\n' + \
+               'ETH - ' + str(round(float(eth['price']), 2)) + ' $ (' + str(
+            round(float(eth_cp["priceChangePercent"]), 2)) + '%)' + '\n' + \
+               'XRP - ' + str(round(float(xrp['price']), 3)) + ' $ (' + str(
+            round(float(xrp_cp["priceChangePercent"]), 2)) + '%)' + '\n' + \
+               'BNB - ' + str(round(float(bnb['price']), 3)) + ' $ (' + str(
+            round(float(bnb_cp["priceChangePercent"]), 2)) + '%)'
         # time.strftime('%d.%m.%Y %H:%M:%S', time.gmtime(btc['calcTime']/1000.))
         return coin
     except BinanceAPIException as e:
