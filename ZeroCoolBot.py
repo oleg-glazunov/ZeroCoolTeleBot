@@ -34,7 +34,10 @@ def start_message(message):
     try:
         # bot.send_message(message.chat.id, '/rate или /курс - курс валюты \n/rates или /курсы - курс всех валют
         # \n/crypto или /крипта - курс крипты \nИли введите название города и узнаете погоду')
-        send_msg = 'Привет, {0.first_name}!\nЯ - <b>{1.first_name}</b>, бот созданный чтобы быть подопытным кроликом.'\
+        send_msg = 'Привет, {0.first_name}!\n' \
+                   'Я - <b>{1.first_name}</b>, помогаю узнать погоду и курсы.\n' \
+                   'Чтобы узнать погоду, введи название города.\n' \
+                   'Чтобы узнать курс, нажми соответствующую кнопку.'\
             .format(message.from_user, bot.get_me())
         bot.send_message(message.chat.id, send_msg, parse_mode='html', reply_markup=markup)
     except Exception as e:
@@ -66,7 +69,7 @@ def send_echo(message):
                 temp) + '°, скорость ветра ' + str(wind) + 'м/с, влажность ' + str(humidity) + '%. '
             if temp < 10:
                 answer += 'Сейчас холодно, одевайтесь тепло.'
-            elif temp < 20:
+            elif temp < 18:
                 answer += 'Сейчас прохладно, одевайтесь теплее.'
             else:
                 answer += 'Температура ok, одевайтесь легко.'
@@ -161,21 +164,16 @@ def binance():
         eth_cp = json.loads(json.dumps(client.get_ticker(symbol='ETHUSDT')))
         xrp = client.get_margin_price_index(symbol='XRPUSDT')
         xrp_cp = json.loads(json.dumps(client.get_ticker(symbol='XRPUSDT')))
-        bch = client.get_margin_price_index(symbol='BCHABCUSDT')
-        bch_cp = json.loads(json.dumps(client.get_ticker(symbol='BCHABCUSDT')))
-        ltc = client.get_margin_price_index(symbol='LTCUSDT')
-        ltc_cp = json.loads(json.dumps(client.get_ticker(symbol='LTCUSDT')))
-        coin = 'Топ-5 криптовалют на ' + str(datetime.today().strftime('%d.%m.%Y %H:%M:%S')) + '\n\n' + \
-               'BTC - ' + str(round(float(btc['price']), 2)) + ' $ (' + str(
-            round(float(btc_cp["priceChangePercent"]), 2)) + '%)' + '\n' + 'ETH - ' + str(
-            round(float(eth['price']), 2)) + ' $ (' + str(
-            round(float(eth_cp["priceChangePercent"]), 2)) + '%)' + '\n' + 'XRP - ' + str(
-            round(float(xrp['price']), 3)) + ' $ (' + str(
-            round(float(xrp_cp["priceChangePercent"]), 2)) + '%)' + '\n' + 'BCH - ' + str(
-            round(float(bch['price']), 2)) + ' $ (' + str(
-            round(float(bch_cp["priceChangePercent"]), 2)) + '%)' + '\n' + 'LTC - ' + str(
-            round(float(ltc['price']), 2)) + ' $ (' + str(
-            round(float(ltc_cp["priceChangePercent"]), 2)) + '%)'
+        # bch = client.get_margin_price_index(symbol='BCHABCUSDT')
+        # bch_cp = json.loads(json.dumps(client.get_ticker(symbol='BCHABCUSDT')))
+        # ltc = client.get_margin_price_index(symbol='LTCUSDT')
+        # ltc_cp = json.loads(json.dumps(client.get_ticker(symbol='LTCUSDT')))
+        coin = 'Топ-3 криптовалют на ' + str(datetime.today().strftime('%d.%m.%Y %H:%M:%S')) + '\n\n' + \
+               'BTC - ' + str(round(float(btc['price']), 2)) + ' $ (' + str(round(float(btc_cp["priceChangePercent"]), 2)) + '%)' + '\n' + \
+               'ETH - ' + str(round(float(eth['price']), 2)) + ' $ (' + str(round(float(eth_cp["priceChangePercent"]), 2)) + '%)' + '\n' + \
+               'XRP - ' + str(round(float(xrp['price']), 3)) + ' $ (' + str(round(float(xrp_cp["priceChangePercent"]), 2)) + '%)'
+               # + '\n' + 'BCH - ' + str(round(float(bch['price']), 2)) + ' $ (' + str(round(float(bch_cp["priceChangePercent"]), 2)) + '%)'
+               # + '\n' + 'LTC - ' + str(round(float(ltc['price']), 2)) + ' $ (' + str(round(float(ltc_cp["priceChangePercent"]), 2)) + '%)'
         # time.strftime('%d.%m.%Y %H:%M:%S', time.gmtime(btc['calcTime']/1000.))
         return coin
     except BinanceAPIException as e:
