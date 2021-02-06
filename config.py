@@ -1,4 +1,0 @@
-bot_token = '929179657:AAFc2jc-QFAV8hrRinm5QjvDjHBJkXrdq_M'
-owm_api_key = 'caf14d0af187617f830a3e39dffa2de9'
-binance_api_key = 'Xs98Yz2r1bkMNDz7QELFlr8yKulScIWOF7rTJ1s92HVD7AwsMGwqnBOEXqNVZbOO'
-binance_api_secret = 'UugSK0B07Nw3wOvaAXHuAG5s0wpWbPhM52YcT2r45mWR2dY9MeFHjOH1r09cqWqj'
